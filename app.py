@@ -7,18 +7,30 @@ import fasttext
 MODEL_PATH = "genre_fasttext_model_small.ftz"
 MODEL_URL = "https://cvsqzmoyqfvhwdxtvqhb.supabase.co/storage/v1/object/public/models/genre_fasttext_model_small.ftz"
 
-# Download model if not present
-if not os.path.exists(MODEL_PATH):
-    print("📥 Downloading FastText model...")
-    urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+try:
+    if not os.path.exists(MODEL_PATH):
+        print("📥 Attempting to download model from Supabase...")
+        urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
 
-# Confirm the file is valid before loading
-if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 1000000:
-    raise ValueError("⚠️ Model download failed or incomplete.")
+    if not os.path.exists(MODEL_PATH):
+        print("❌ File does not exist after download.")
+        raise ValueError("⚠️ Model download failed.")
 
-print("✅ Model ready, loading into memory...")
-model = fasttext.load_model(MODEL_PATH)
+    size = os.path.getsize(MODEL_PATH)
+    print(f"📦 File downloaded. Size: {size / 1024 / 1024:.2f} MB")
 
+    if size < 1_000_000:
+        raise ValueError("⚠️ Model download incomplete or corrupted.")
+
+    model = fasttext.load_model(MODEL_PATH)
+    print("✅ FastText model loaded successfully.")
+
+except Exception as e:
+    print(f"❌ Exception during model loading: {e}")
+    raise
+
+
+# === Flask App Setup ===
 app = Flask(__name__)
 CORS(app)
 
@@ -38,4 +50,7 @@ def predict():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000))
+    )
