@@ -1,15 +1,24 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import fasttext
 import os
+import urllib.request
+import fasttext
 
-# Load trained FastText model
-model = fasttext.load_model("genre_fasttext_model.ftz")
+MODEL_PATH = "genre_fasttext_model.ftz"
+MODEL_URL = "https://drive.google.com/uc?export=download&id=1mooq6l1ol2ZyFkDGyi5MS9bpHInz7WhK"
+
+# Download model if not present
+if not os.path.exists(MODEL_PATH):
+    print("Downloading FastText model...")
+    urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+
+# Load FastText model
+model = fasttext.load_model(MODEL_PATH)
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
     data = request.json
     desc = data.get("description", "").strip()
