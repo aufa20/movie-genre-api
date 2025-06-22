@@ -25,6 +25,8 @@ try:
     model = fasttext.load_model(MODEL_PATH)
     print("✅ FastText model loaded successfully.")
 
+# Force redeploy to Render
+
 except Exception as e:
     print(f"❌ Exception during model loading: {e}")
     raise
