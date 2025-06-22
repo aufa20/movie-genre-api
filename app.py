@@ -4,35 +4,28 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import fasttext
 
-MODEL_PATH = "genre_fasttext_model_small.ftz"
-MODEL_URL = "https://cvsqzmoyqfvhwdxtvqhb.supabase.co/storage/v1/object/public/models/genre_fasttext_model_small.ftz"
+MODEL_PATH = "genre_fasttext_model_tiny.ftz"
+MODEL_URL = "https://www.dropbox.com/scl/fi/jg86kufq6nh8vj2n3ujhe/genre_fasttext_model_tiny.ftz?rlkey=syj7tc35l8j42mlj4sk4xircp&dl=1"
 
+# Download model if missing
 try:
     if not os.path.exists(MODEL_PATH):
-        print("📥 Attempting to download model from Supabase...")
+        print("📥 Downloading model from Dropbox...")
         urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
 
-    if not os.path.exists(MODEL_PATH):
-        print("❌ File does not exist after download.")
-        raise ValueError("⚠️ Model download failed.")
-
     size = os.path.getsize(MODEL_PATH)
-    print(f"📦 File downloaded. Size: {size / 1024 / 1024:.2f} MB")
-
-    if size < 1_000_000:
-        raise ValueError("⚠️ Model download incomplete or corrupted.")
+    print(f"📦 Model file size: {size / 1024 / 1024:.2f} MB")
+    if size < 1000000:
+        raise ValueError("⚠️ Model file is too small or incomplete.")
 
     model = fasttext.load_model(MODEL_PATH)
-    print("✅ FastText model loaded successfully.")
-
-# Force redeploy to Render
+    print("✅ Model loaded successfully.")
 
 except Exception as e:
-    print(f"❌ Exception during model loading: {e}")
+    print(f"❌ Failed to load model: {e}")
     raise
 
-
-# === Flask App Setup ===
+# Flask app setup
 app = Flask(__name__)
 CORS(app)
 
@@ -40,7 +33,6 @@ CORS(app)
 def predict():
     data = request.json
     desc = data.get("description", "").strip()
-
     if not desc:
         return jsonify({"error": "No description provided"}), 400
 
@@ -52,7 +44,4 @@ def predict():
     })
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000))
-    )
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
