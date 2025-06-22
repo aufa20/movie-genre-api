@@ -4,8 +4,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import fasttext
 
-MODEL_PATH = "genre_fasttext_model.ftz"
-MODEL_URL = "https://cvsqzmoyqfvhwdxtvqhb.supabase.co/storage/v1/object/public/models//genre_fasttext_model_small.ftz"
+MODEL_PATH = "genre_fasttext_model_small.ftz"
+MODEL_URL = "https://cvsqzmoyqfvhwdxtvqhb.supabase.co/storage/v1/object/public/models/genre_fasttext_model_small.ftz"
 
 # Download model if not present
 if not os.path.exists(MODEL_PATH):
