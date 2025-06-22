@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
 import urllib.request
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import fasttext
 
 MODEL_PATH = "genre_fasttext_model.ftz"
@@ -9,16 +9,20 @@ MODEL_URL = "https://drive.google.com/uc?export=download&id=1mooq6l1ol2ZyFkDGyi5
 
 # Download model if not present
 if not os.path.exists(MODEL_PATH):
-    print("Downloading FastText model...")
+    print("📥 Downloading FastText model...")
     urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
 
-# Load FastText model
+# Confirm the file is valid before loading
+if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 1000000:
+    raise ValueError("⚠️ Model download failed or incomplete.")
+
+print("✅ Model ready, loading into memory...")
 model = fasttext.load_model(MODEL_PATH)
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
     desc = data.get("description", "").strip()
@@ -34,7 +38,4 @@ def predict():
     })
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000))
-    )
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
