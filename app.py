@@ -5,7 +5,7 @@ from flask_cors import CORS
 import fasttext
 
 MODEL_PATH = "genre_fasttext_model.ftz"
-MODEL_URL = "https://www.dropbox.com/scl/fi/qosde49eagxoh6kv6j401/genre_fasttext_model.ftz?rlkey=62rz2vs0ptcw80z5ksdtd56yx&st=8fyfmb2n&dl=1"
+MODEL_URL = "https://cvsqzmoyqfvhwdxtvqhb.supabase.co/storage/v1/object/public/models//genre_fasttext_model_small.ftz"
 
 # Download model if not present
 if not os.path.exists(MODEL_PATH):
