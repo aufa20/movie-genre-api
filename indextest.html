@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Intelligent Movie Genre Classification</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    .movie { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 6px; }
+    h1 { color: #2b2b2b; }
+  </style>
+</head>
+<body>
+  <h1>Movie Genre Classification</h1>
+
+  <input type="text" id="description" placeholder="Describe a movie..." style="width: 100%;" />
+  <button id="recommendBtn">Classify & Recommend</button>
+
+  <div id="result"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const supabaseUrl = 'https://cvsqzmoyqfvhwdxtvqhb.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c3F6bW95cWZ2aHdkeHR2cWhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMTA2NzgsImV4cCI6MjA2NTg4NjY3OH0._SM-1bNPzYxAgHC1PjpcK1K_OEtCOaDyYBuQ68yIr38';
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      function mockGenreClassifier(text) {
+        const lower = text.toLowerCase();
+        if (lower.includes("action")) return "Action";
+        if (lower.includes("adventure")) return "Adventure";
+        if (
+          lower.includes("horror") ||
+          lower.includes("paranormal") ||
+          lower.includes("mysterious") ||
+          lower.includes("secret")
+        ) return "Horror";
+        if (
+          lower.includes("animation") ||
+          lower.includes("playful") ||
+          lower.includes("cartoon")
+        ) return "Animation";
+        return "Thriller";
+      }
+
+      async function recommendMovies() {
+        const desc = document.getElementById('description').value;
+        if (!desc) return alert("Please enter a description.");
+
+        const predictedGenre = mockGenreClassifier(desc);
+        document.getElementById('result').innerHTML = `<p><strong>Predicted genre:</strong> ${predictedGenre}</p>`;
+
+        const { data, error } = await supabase
+          .from('movies')
+          .select('*')
+          .ilike('genre', `%${predictedGenre}%`);
+
+        const resultDiv = document.getElementById('result');
+
+        if (error) {
+          resultDiv.innerHTML += `<p style="color:red;">Error: ${error.message}</p>`;
+          console.error('Supabase error:', error);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          resultDiv.innerHTML += `<p>No movies found for this genre.</p>`;
+          return;
+        }
+
+        data.forEach(movie => {
+          resultDiv.innerHTML += `
+            <div class="movie">
+              <strong>${movie.title}</strong><br/>
+              ${movie.description}<br/>
+              <em>Genre: ${movie.genre}</em>
+            </div>`;
+        });
+      }
+
+      document.getElementById('recommendBtn').addEventListener('click', recommendMovies);
+    });
+  </script>
+</body>
+</html>

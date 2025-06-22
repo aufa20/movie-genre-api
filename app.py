@@ -1,24 +1,31 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import pickle
-import os  # Required for os.environ
+import fasttext
+import os
 
-# Load model
-with open("genre_model.pkl", "rb") as f:
-    model = pickle.load(f)
+# Load trained FastText model
+model = fasttext.load_model("genre_fasttext_model.ftz")
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
-    desc = data.get('description', '')
-    pred = model.predict([desc])[0]
-    return jsonify({'genre': pred})
+    desc = data.get("description", "").strip()
 
-if __name__ == '__main__':
+    if not desc:
+        return jsonify({"error": "No description provided"}), 400
+
+    label, confidence = model.predict(desc)
+    genre = label[0].replace("__label__", "")
+    return jsonify({
+        "genre": genre,
+        "confidence": round(confidence[0], 4)
+    })
+
+if __name__ == "__main__":
     app.run(
-        host='0.0.0.0',
-        port=int(os.environ.get('PORT', 5000))
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000))
     )
